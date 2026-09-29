@@ -38,14 +38,14 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsup --watch",
+    "dev": "tsdown --watch",
     "typecheck": "tsc --noEmit",
-    "build": "tsup",
+    "build": "tsdown",
     "serve-test": "pnpm build && serve . -l 8899"
   },
   "devDependencies": {
     "serve": "^14.2.6",
-    "tsup": "^8.5.1",
+    "tsdown": "0.23.0",
     "typescript": "^6.0.3"
   }
 }

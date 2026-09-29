@@ -45,7 +45,7 @@ function start() {
   const { options } = activeInstance;
 
   const patch = patchGeolocation();
-  const client = createSimClient(options.serverUrl, options.simId);
+  const client = createSimClient(options.serverUrl, options.shareToken);
   client.subscribe((position: Position | null, connection) => {
     if (!activeInstance) return;
     activeInstance.status.position = position;

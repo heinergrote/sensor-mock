@@ -6,12 +6,6 @@ server simulation. It patches `navigator.geolocation` in place, so any code
 using the standard Geolocation API (`getCurrentPosition`, `watchPosition`)
 transparently receives mocked coordinates instead of the real device GPS.
 
-This is a drop-in alternative to the sensor-sim Chrome extension for sites
-that don't run in a browser you control (or for automated/CI environments) —
-just add an npm dependency instead of installing an extension. The name is
-generic ("sensor-mock", not "gps-mock") because other mocked sensor types
-(accelerometer, orientation, etc.) may be added later.
-
 ## Install
 
 ```bash
@@ -23,11 +17,11 @@ pnpm add sensor-mock
 ## Usage
 
 ```ts
-import { enableSensorMock } from "sensor-mock";
+import {enableSensorMock} from "sensor-mock";
 
 const handle = enableSensorMock({
   serverUrl: "http://localhost:4000", // sensor-sim server base URL
-  simId: "abc123",                    // simulation id to stream from
+  shareToken: "abc123",               // simulation shareToken to stream from
   overlay: true,                      // optional bottom-left status widget
 });
 
@@ -45,11 +39,11 @@ tears down any previous instance first.
 
 ## Options
 
-| Option      | Type      | Required | Description                                                        |
-|-------------|-----------|----------|---------------------------------------------------------------------|
-| `serverUrl` | `string`  | yes      | Base URL of the sensor-sim server (`http(s)://...`), converted to `ws(s)://` internally. |
-| `simId`     | `string`  | yes      | id of the simulation to stream from `/ws/sims/:id`.                 |
-| `overlay`   | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `false`. |
+| Option       | Type      | Required | Description                                                                                                                      |
+|--------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------|
+| `serverUrl`  | `string`  | yes      | Base URL of the sensor-sim server (`http(s)://...`), converted to `ws(s)://` internally.                                         |
+| `shareToken` | `string`  | yes      | token of the simulation to stream from `/api/shared/:token/ws`.                                                                  |
+| `overlay`    | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `false`. |
 
 ## Handle API
 

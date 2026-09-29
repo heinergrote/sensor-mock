@@ -7,9 +7,9 @@ const CONTAINER_STYLE: Partial<CSSStyleDeclaration> = {
   zIndex: "2147483647",
   padding: "6px 8px",
   borderRadius: "6px",
-  background: "rgba(20, 20, 20, 0.8)",
+  background: "rgba(0, 0, 0, 0.6)",
   color: "#fff",
-  font: "11px/1.4 monospace",
+  font: "11px monospace",
   display: "flex",
   alignItems: "center",
   gap: "8px",
@@ -18,12 +18,12 @@ const CONTAINER_STYLE: Partial<CSSStyleDeclaration> = {
 
 const BUTTON_STYLE: Partial<CSSStyleDeclaration> = {
   cursor: "pointer",
-  border: "1px solid #666",
-  borderRadius: "4px",
-  background: "transparent",
+  border: "1px solid black",
+  borderRadius: "2px",
+  background: "black",
   color: "inherit",
   font: "inherit",
-  padding: "2px 6px",
+  padding: "2px",
 };
 
 function applyStyle(el: HTMLElement, style: Partial<CSSStyleDeclaration>) {
@@ -47,7 +47,7 @@ export function createOverlay(onToggle: () => void): Overlay {
   button.type = "button";
   button.addEventListener("click", onToggle);
 
-  container.append(label, button);
+  container.append(button, label);
   document.body.appendChild(container);
 
   return {
@@ -56,8 +56,8 @@ export function createOverlay(onToggle: () => void): Overlay {
       const pos = status.position
         ? `${status.position.latitude.toFixed(5)}, ${status.position.longitude.toFixed(5)}`
         : "no fix";
-      label.textContent = `sensor-mock: ${status.enabled ? "on" : "off"} · ${conn} · ${pos}`;
-      button.textContent = status.enabled ? "Disable" : "Enable";
+      label.textContent = `${conn} · ${pos}`;
+      button.textContent = status.enabled ? "🟢" : "🔴";
     },
     destroy() {
       container.remove();

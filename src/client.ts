@@ -1,15 +1,13 @@
 import type { ConnectionStatus, Position } from "./types.js";
 
-/** Converts an http(s)/ws(s) base URL into a ws(s) URL, tolerating trailing slashes. */
 function toWebSocketUrl(serverUrl: string): string {
   const url = new URL(serverUrl);
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   return url.toString().replace(/\/+$/, "");
 }
 
-type Simulation = {
-  config: unknown;
-  state: { current: Position } | null;
+type SimState = {
+  current: Position
 };
 
 const INITIAL_RECONNECT_DELAY_MS = 500;
@@ -25,10 +23,10 @@ export type SimClient = {
 };
 
 /**
- * Connects to the sensor-sim server's `/ws/sims/:id` endpoint and keeps a
+ * Connects to the sensor-sim server's `/api/shared/:token/id` endpoint and keeps a
  * running "latest position" value, reconnecting with backoff on drop.
  */
-export function createSimClient(serverUrl: string, simId: string): SimClient {
+export function createSimClient(serverUrl: string, token: string): SimClient {
   const listeners = new Set<SimClientListener>();
   let latestPosition: Position | null = null;
   let status: ConnectionStatus = "idle";
@@ -59,7 +57,7 @@ export function createSimClient(serverUrl: string, simId: string): SimClient {
     if (closed) return;
     setStatus("connecting");
 
-    const wsUrl = `${toWebSocketUrl(serverUrl)}/ws/sims/${encodeURIComponent(simId)}`;
+    const wsUrl = `${toWebSocketUrl(serverUrl)}/api/shared/${encodeURIComponent(token)}/ws`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -69,9 +67,9 @@ export function createSimClient(serverUrl: string, simId: string): SimClient {
 
     ws.onmessage = (event) => {
       try {
-        const data = JSON.parse(event.data) as Simulation;
-        if (data.state?.current) {
-          latestPosition = data.state.current;
+        const state = JSON.parse(event.data) as SimState;
+        if (state?.current) {
+          latestPosition = state.current;
           notify();
         }
       } catch {
