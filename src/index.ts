@@ -43,6 +43,7 @@ function notify() {
 function start() {
   if (!activeInstance || activeInstance.client) return;
   const { options } = activeInstance;
+  if (!options.shareToken) return;
 
   const patch = patchGeolocation();
   const client = createSimClient(options.serverUrl, options.shareToken);
@@ -92,13 +93,23 @@ export function enableSensorMock(options: SensorMockOptions): SensorMockHandle {
   };
 
   if (options.overlay) {
-    activeInstance.overlay = createOverlay(() => {
-      if (activeInstance?.status.enabled) stop();
-      else start();
-    });
+    activeInstance.overlay = createOverlay(
+      options.shareToken ?? "",
+      () => {
+        if (activeInstance?.status.enabled) stop();
+        else start();
+      },
+      (token) => {
+        if (!activeInstance) return;
+        activeInstance.options = { ...activeInstance.options, shareToken: token };
+        stop();
+        start();
+      },
+    );
   }
 
   start();
+  notify();
 
   return {
     disable: disableSensorMock,

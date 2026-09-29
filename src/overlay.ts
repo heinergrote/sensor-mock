@@ -30,13 +30,27 @@ function applyStyle(el: HTMLElement, style: Partial<CSSStyleDeclaration>) {
   Object.assign(el.style, style);
 }
 
+const INPUT_STYLE: Partial<CSSStyleDeclaration> = {
+  font: "inherit",
+  color: "#fff",
+  background: "rgba(255, 255, 255, 0.15)",
+  border: "1px solid black",
+  borderRadius: "2px",
+  padding: "2px 4px",
+  width: "110px",
+};
+
 export type Overlay = {
   update: (status: SensorMockStatus) => void;
   destroy: () => void;
 };
 
-/** Minimal, dependency-free bottom-left status/toggle widget. */
-export function createOverlay(onToggle: () => void): Overlay {
+/** Minimal, dependency-free bottom-left status/toggle widget with a shareToken input. */
+export function createOverlay(
+  initialToken: string,
+  onToggle: () => void,
+  onApplyToken: (token: string) => void,
+): Overlay {
   const container = document.createElement("div");
   applyStyle(container, CONTAINER_STYLE);
   container.setAttribute("data-sensor-mock-overlay", "");
@@ -47,7 +61,25 @@ export function createOverlay(onToggle: () => void): Overlay {
   button.type = "button";
   button.addEventListener("click", onToggle);
 
-  container.append(button, label);
+  const input = document.createElement("input");
+  applyStyle(input, INPUT_STYLE);
+  input.type = "text";
+  input.placeholder = "shareToken";
+  input.value = initialToken;
+  input.spellcheck = false;
+  input.autocomplete = "off";
+
+  const apply = document.createElement("button");
+  applyStyle(apply, BUTTON_STYLE);
+  apply.type = "button";
+  apply.textContent = "Apply";
+  const submit = () => onApplyToken(input.value.trim());
+  apply.addEventListener("click", submit);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") submit();
+  });
+
+  container.append(button, label, input, apply);
   document.body.appendChild(container);
 
   return {
