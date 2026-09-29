@@ -43,7 +43,7 @@ tears down any previous instance first.
 |--------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------|
 | `serverUrl`  | `string`  | yes      | Base URL of the sensor-sim server (`http(s)://...`), converted to `ws(s)://` internally.                                         |
 | `shareToken` | `string`  | no       | token of the simulation to stream from `/api/shared/:token/ws`. If omitted or empty, mocking stays disabled until a token is applied via the overlay. |
-| `overlay`    | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `false`. |
+| `overlay`    | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `true` if no `shareToken` is given, otherwise `false`. |
 
 ## Handle API
 
@@ -55,7 +55,7 @@ tears down any previous instance first.
 
 ## Overlay
 
-When `overlay: true`, a minimal, dependency-free widget is mounted in the
+When the overlay is enabled, a minimal, dependency-free widget is mounted in the
 bottom-left corner showing mock state, connection status, and current
 coordinates, with a button to toggle mocking on/off without losing the
 connection or removing the widget. A text input shows the current `shareToken`

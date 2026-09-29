@@ -10,12 +10,8 @@
 
 <script type="module">
   import {enableSensorMock} from "/dist/index.js";
-  enableSensorMock({
-    serverUrl: "https://sensor-sim.h9e.de",
-    overlay: true,
-  });
+  enableSensorMock({serverUrl: "https://sensor-sim.h9e.de"});
 </script>
-
 
 <script type="module">
   import * as ml from 'https://unpkg.com/maplibre-gl/dist/maplibre-gl.mjs';

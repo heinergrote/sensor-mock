@@ -20,6 +20,7 @@ export type SensorMockOptions = {
   serverUrl: string;
   /** Optional. If empty, mocking stays disabled until a token is applied (e.g. via the overlay). */
   shareToken?: string;
+  /** Show the overlay. Defaults to `true` when no `shareToken` is given, otherwise `false`. */
   overlay?: boolean;
 };
 

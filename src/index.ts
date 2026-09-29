@@ -41,11 +41,11 @@ function notify() {
 
 /** Starts (or restarts) the WebSocket connection + geolocation patch. */
 function start() {
-  if (!activeInstance || activeInstance.client) return;
+  if (!activeInstance?.patch || activeInstance.client) return;
   const { options } = activeInstance;
   if (!options.shareToken) return;
 
-  const patch = patchGeolocation();
+  const patch = activeInstance.patch;
   const client = createSimClient(options.serverUrl, options.shareToken);
   client.subscribe((position: Position | null, connection) => {
     if (!activeInstance) return;
@@ -55,7 +55,7 @@ function start() {
     notify();
   });
 
-  activeInstance.patch = patch;
+  patch.setActive(true);
   activeInstance.client = client;
   activeInstance.status.enabled = true;
   activeInstance.status.connection = client.status;
@@ -67,9 +67,8 @@ function start() {
 function stop() {
   if (!activeInstance) return;
   activeInstance.client?.close();
-  activeInstance.patch?.restore();
+  activeInstance.patch?.setActive(false);
   activeInstance.client = null;
-  activeInstance.patch = null;
   activeInstance.status.enabled = false;
   activeInstance.status.connection = "disconnected";
   notify();
@@ -89,10 +88,10 @@ export function enableSensorMock(options: SensorMockOptions): SensorMockHandle {
     listeners: new Set(),
     overlay: null,
     client: null,
-    patch: null,
+    patch: patchGeolocation(),
   };
 
-  if (options.overlay) {
+  if (options.overlay ?? !options.shareToken) {
     activeInstance.overlay = createOverlay(
       options.shareToken ?? "",
       () => {

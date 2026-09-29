@@ -23,7 +23,7 @@ const BUTTON_STYLE: Partial<CSSStyleDeclaration> = {
   background: "black",
   color: "inherit",
   font: "inherit",
-  padding: "2px",
+  padding: "2px 4px",
 };
 
 function applyStyle(el: HTMLElement, style: Partial<CSSStyleDeclaration>) {
@@ -32,8 +32,6 @@ function applyStyle(el: HTMLElement, style: Partial<CSSStyleDeclaration>) {
 
 const INPUT_STYLE: Partial<CSSStyleDeclaration> = {
   font: "inherit",
-  color: "#fff",
-  background: "rgba(255, 255, 255, 0.15)",
   border: "1px solid black",
   borderRadius: "2px",
   padding: "2px 4px",
@@ -72,7 +70,7 @@ export function createOverlay(
   const apply = document.createElement("button");
   applyStyle(apply, BUTTON_STYLE);
   apply.type = "button";
-  apply.textContent = "Apply";
+  apply.textContent = "↩️";
   const submit = () => onApplyToken(input.value.trim());
   apply.addEventListener("click", submit);
   input.addEventListener("keydown", (e) => {
