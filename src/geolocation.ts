@@ -1,4 +1,4 @@
-import type { Position } from "./types.js";
+import type { GeoPosition } from "./types.js";
 
 type WatchEntry = {
   success: PositionCallback;
@@ -10,7 +10,7 @@ type WatchEntry = {
 
 const POSITION_UNAVAILABLE = 2;
 
-function buildPosition(position: Position): GeolocationPosition {
+function buildPosition(position: GeoPosition): GeolocationPosition {
   const coords: GeolocationCoordinates = {
     latitude: position.latitude,
     longitude: position.longitude,
@@ -52,7 +52,7 @@ function buildPositionUnavailableError(): GeolocationPositionError {
 export function patchGeolocation() {
   const original = navigator.geolocation;
   let active = false;
-  let current: Position | null = null;
+  let position: GeoPosition | null = null;
   const watchers = new Map<number, WatchEntry>();
   let nextWatchId = 1;
 
@@ -67,7 +67,7 @@ export function patchGeolocation() {
   const mock: Geolocation = {
     getCurrentPosition(success, error, options) {
       if (!active) return original.getCurrentPosition(success, error, options);
-      if (current) success(buildPosition(current));
+      if (position) success(buildPosition(position));
       else error?.(buildPositionUnavailableError());
     },
     watchPosition(success, error, options) {
@@ -75,7 +75,7 @@ export function patchGeolocation() {
       const entry: WatchEntry = { success, error, options, realId: null };
       watchers.set(id, entry);
       if (!active) watchReal(entry);
-      else if (current) success(buildPosition(current));
+      else if (position) success(buildPosition(position));
       return id;
     },
     clearWatch(id) {
@@ -95,16 +95,16 @@ export function patchGeolocation() {
     setActive(next: boolean) {
       if (next === active) return;
       active = next;
-      current = null;
+      position = null;
       for (const entry of watchers.values()) {
         if (active) unwatchReal(entry);
         else watchReal(entry);
       }
     },
     /** Feed a freshly received position to all active watchers (while active). */
-    pushPosition(position: Position | null) {
+    pushPosition(newPosition: GeoPosition | null) {
       if (!active) return;
-      current = position;
+      position = newPosition;
       if (!position) return;
       const built = buildPosition(position);
       for (const { success } of watchers.values()) success(built);

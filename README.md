@@ -20,9 +20,9 @@ pnpm add sensor-mock
 import {enableSensorMock} from "sensor-mock";
 
 const handle = enableSensorMock({
-  serverUrl: "http://localhost:4000", // sensor-sim server base URL
-  shareToken: "abc123",               // simulation shareToken to stream from
-  overlay: true,                      // optional bottom-left status widget
+  url: "https://sensor-sim.h9e.de/s/<token>", // stream url (includes the auth token)
+  urlStorageKey: "sensor-mock-url",           // optional: persist a url applied via the overlay
+  overlay: true,                              // optional bottom-left status widget (default: true)
 });
 
 navigator.geolocation.watchPosition((position) => {
@@ -39,17 +39,20 @@ tears down any previous instance first.
 
 ## Options
 
-| Option       | Type      | Required | Description                                                                                                                      |
-|--------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------|
-| `serverUrl`  | `string`  | yes      | Base URL of the sensor-sim server (`http(s)://...`), converted to `ws(s)://` internally.                                         |
-| `shareToken` | `string`  | no       | token of the simulation to stream from `/api/shared/:token/ws`. If omitted or empty, mocking stays disabled until a token is applied via the overlay. |
-| `overlay`    | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `true` if no `shareToken` is given, otherwise `false`. |
+| Option          | Type      | Required | Description                                                                                                                                                                                                                                |
+|-----------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `url`           | `string`  | no       | URL to stream the sensor updates from (includes a token for authentication). `http(s)://` is converted to `ws(s)://` internally and `/ws` is appended. If omitted or empty, mocking stays disabled until a url is applied via the overlay. |
+| `urlStorageKey` | `string`  | no       | localStorage key. If set, a url applied via the overlay is saved under this key, and on startup a saved non-empty url takes precedence over `url`.                                                                                         |
+| `overlay`       | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `true`; can be toggled later via `handle.setOverlayVisible`.                                                       |
+
+All options are optional, so `enableSensorMock()` can be called without arguments.
 
 ## Handle API
 
 `enableSensorMock` returns a handle:
 
 - `disable()` — restores the real `navigator.geolocation` and closes the connection.
+- `setOverlayVisible(visible)` — shows or hides the overlay widget.
 - `status` — current `{ enabled, connection, position }` snapshot.
 - `subscribe(callback)` — subscribe to status changes; returns an unsubscribe function.
 
@@ -58,9 +61,10 @@ tears down any previous instance first.
 When the overlay is enabled, a minimal, dependency-free widget is mounted in the
 bottom-left corner showing mock state, connection status, and current
 coordinates, with a button to toggle mocking on/off without losing the
-connection or removing the widget. A text input shows the current `shareToken`
-(empty if none is set); enter a token and press **Apply** (or Enter) to enable
-mocking and reconnect to the server with it.
+connection or removing the widget. A text input shows the current `url`
+(empty if none is set); enter a url and press **Apply** (or Enter) to enable
+mocking and reconnect to the server with it. If `urlStorageKey` is set, the
+applied url is saved to localStorage.
 
 ## Notes
 

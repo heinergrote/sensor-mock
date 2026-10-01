@@ -35,7 +35,7 @@ const INPUT_STYLE: Partial<CSSStyleDeclaration> = {
   border: "1px solid black",
   borderRadius: "2px",
   padding: "2px 4px",
-  width: "110px",
+  width: "200px",
 };
 
 export type Overlay = {
@@ -43,11 +43,11 @@ export type Overlay = {
   destroy: () => void;
 };
 
-/** Minimal, dependency-free bottom-left status/toggle widget with a shareToken input. */
+/** Minimal, dependency-free bottom-left status/toggle widget with a url input. */
 export function createOverlay(
-  initialToken: string,
+  initialUrl: string,
   onToggle: () => void,
-  onApplyToken: (token: string) => void,
+  onApplyUrl: (url: string) => void,
 ): Overlay {
   const container = document.createElement("div");
   applyStyle(container, CONTAINER_STYLE);
@@ -62,8 +62,8 @@ export function createOverlay(
   const input = document.createElement("input");
   applyStyle(input, INPUT_STYLE);
   input.type = "text";
-  input.placeholder = "shareToken";
-  input.value = initialToken;
+  input.placeholder = "url";
+  input.value = initialUrl;
   input.spellcheck = false;
   input.autocomplete = "off";
 
@@ -71,7 +71,7 @@ export function createOverlay(
   applyStyle(apply, BUTTON_STYLE);
   apply.type = "button";
   apply.textContent = "↩️";
-  const submit = () => onApplyToken(input.value.trim());
+  const submit = () => onApplyUrl(input.value.trim());
   apply.addEventListener("click", submit);
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") submit();

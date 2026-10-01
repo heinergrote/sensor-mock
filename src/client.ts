@@ -1,4 +1,4 @@
-import type { ConnectionStatus, Position } from "./types.js";
+import type { ConnectionStatus, GeoPosition } from "./types.js";
 
 function toWebSocketUrl(serverUrl: string): string {
   const url = new URL(serverUrl);
@@ -7,28 +7,28 @@ function toWebSocketUrl(serverUrl: string): string {
 }
 
 type SimState = {
-  current: Position
+  position: GeoPosition
 };
 
 const INITIAL_RECONNECT_DELAY_MS = 500;
 const MAX_RECONNECT_DELAY_MS = 10_000;
 
-export type SimClientListener = (position: Position | null, status: ConnectionStatus) => void;
+export type SimClientListener = (position: GeoPosition | null, status: ConnectionStatus) => void;
 
 export type SimClient = {
-  latestPosition: Position | null;
+  latestPosition: GeoPosition | null;
   status: ConnectionStatus;
   subscribe: (listener: SimClientListener) => () => void;
   close: () => void;
 };
 
 /**
- * Connects to the sensor-sim server's `/api/shared/:token/id` endpoint and keeps a
+ * Connects to the sensor-sim server's endpoint and keeps a
  * running "latest position" value, reconnecting with backoff on drop.
  */
-export function createSimClient(serverUrl: string, token: string): SimClient {
+export function createSimClient(url: string): SimClient {
   const listeners = new Set<SimClientListener>();
-  let latestPosition: Position | null = null;
+  let latestPosition: GeoPosition | null = null;
   let status: ConnectionStatus = "idle";
   let ws: WebSocket | null = null;
   let reconnectDelay = INITIAL_RECONNECT_DELAY_MS;
@@ -57,7 +57,7 @@ export function createSimClient(serverUrl: string, token: string): SimClient {
     if (closed) return;
     setStatus("connecting");
 
-    const wsUrl = `${toWebSocketUrl(serverUrl)}/api/shared/${encodeURIComponent(token)}/ws`;
+    const wsUrl = `${toWebSocketUrl(url)}/ws`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {
@@ -68,8 +68,8 @@ export function createSimClient(serverUrl: string, token: string): SimClient {
     ws.onmessage = (event) => {
       try {
         const state = JSON.parse(event.data) as SimState;
-        if (state?.current) {
-          latestPosition = state.current;
+        if (state?.position) {
+          latestPosition = state.position;
           notify();
         }
       } catch {

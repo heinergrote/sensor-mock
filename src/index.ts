@@ -2,7 +2,7 @@ import { createSimClient, type SimClient } from "./client.js";
 import { patchGeolocation } from "./geolocation.js";
 import { createOverlay, type Overlay } from "./overlay.js";
 import type {
-  Position,
+  GeoPosition,
   SensorMockHandle,
   SensorMockOptions,
   SensorMockStatus,
@@ -11,7 +11,7 @@ import type {
 const IDLE_STATUS: SensorMockStatus = { enabled: false, connection: "idle", position: null };
 
 export type {
-  Position,
+  GeoPosition,
   SensorMockHandle,
   SensorMockOptions,
   SensorMockStatus,
@@ -39,15 +39,33 @@ function notify() {
   activeInstance.overlay?.update(snapshot);
 }
 
+function readStoredUrl(key: string | undefined): string | undefined {
+  if (!key) return undefined;
+  try {
+    return localStorage.getItem(key) || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function writeStoredUrl(key: string | undefined, url: string) {
+  if (!key) return;
+  try {
+    localStorage.setItem(key, url);
+  } catch {
+    // storage unavailable (private mode, blocked, SSR) – ignore
+  }
+}
+
 /** Starts (or restarts) the WebSocket connection + geolocation patch. */
 function start() {
   if (!activeInstance?.patch || activeInstance.client) return;
   const { options } = activeInstance;
-  if (!options.shareToken) return;
+  if (!options.url) return;
 
   const patch = activeInstance.patch;
-  const client = createSimClient(options.serverUrl, options.shareToken);
-  client.subscribe((position: Position | null, connection) => {
+  const client = createSimClient(options.url);
+  client.subscribe((position: GeoPosition | null, connection) => {
     if (!activeInstance) return;
     activeInstance.status.position = position;
     activeInstance.status.connection = connection;
@@ -74,16 +92,44 @@ function stop() {
   notify();
 }
 
+/** Mounts or removes the overlay widget of the active instance. */
+function setOverlayVisible(visible: boolean) {
+  if (!activeInstance) return;
+  if (!visible) {
+    activeInstance.overlay?.destroy();
+    activeInstance.overlay = null;
+    return;
+  }
+  if (activeInstance.overlay) return;
+  activeInstance.overlay = createOverlay(
+    activeInstance.options.url ?? "",
+    () => {
+      if (activeInstance?.status.enabled) stop();
+      else start();
+    },
+    (url) => {
+      if (!activeInstance) return;
+      writeStoredUrl(activeInstance.options.urlStorageKey, url);
+      activeInstance.options = { ...activeInstance.options, url };
+      stop();
+      start();
+    },
+  );
+  activeInstance.overlay.update({ ...activeInstance.status });
+}
+
 /**
  * Patches `navigator.geolocation` with live positions streamed from a
  * sensor-sim server simulation, so any code using the standard Geolocation
  * API receives mocked coordinates.
  */
-export function enableSensorMock(options: SensorMockOptions): SensorMockHandle {
+export function enableSensorMock(options: SensorMockOptions = {}): SensorMockHandle {
   disableSensorMock();
 
+  const url = readStoredUrl(options.urlStorageKey) ?? options.url;
+
   activeInstance = {
-    options,
+    options: { ...options, url },
     status: { enabled: false, connection: "idle", position: null },
     listeners: new Set(),
     overlay: null,
@@ -91,27 +137,14 @@ export function enableSensorMock(options: SensorMockOptions): SensorMockHandle {
     patch: patchGeolocation(),
   };
 
-  if (options.overlay ?? !options.shareToken) {
-    activeInstance.overlay = createOverlay(
-      options.shareToken ?? "",
-      () => {
-        if (activeInstance?.status.enabled) stop();
-        else start();
-      },
-      (token) => {
-        if (!activeInstance) return;
-        activeInstance.options = { ...activeInstance.options, shareToken: token };
-        stop();
-        start();
-      },
-    );
-  }
+  if (options.overlay ?? true) setOverlayVisible(true);
 
   start();
   notify();
 
   return {
     disable: disableSensorMock,
+    setOverlayVisible,
     get status() {
       return activeInstance ? { ...activeInstance.status } : IDLE_STATUS;
     },
