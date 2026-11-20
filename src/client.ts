@@ -1,4 +1,4 @@
-import type { ConnectionStatus, GeoPosition } from "./types.js";
+import type {ConnectionStatus, GeoPosition} from "./types.js";
 
 function toWebSocketUrl(serverUrl: string): string {
   const url = new URL(serverUrl);
@@ -57,7 +57,7 @@ export function createSimClient(url: string): SimClient {
     if (closed) return;
     setStatus("connecting");
 
-    const wsUrl = `${toWebSocketUrl(url)}/ws`;
+    const wsUrl = `${toWebSocketUrl(url)}`;
     ws = new WebSocket(wsUrl);
 
     ws.onopen = () => {

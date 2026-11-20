@@ -39,11 +39,11 @@ tears down any previous instance first.
 
 ## Options
 
-| Option          | Type      | Required | Description                                                                                                                                                                                                                                |
-|-----------------|-----------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `url`           | `string`  | no       | URL to stream the sensor updates from (includes a token for authentication). `http(s)://` is converted to `ws(s)://` internally and `/ws` is appended. If omitted or empty, mocking stays disabled until a url is applied via the overlay. |
-| `urlStorageKey` | `string`  | no       | localStorage key. If set, a url applied via the overlay is saved under this key, and on startup a saved non-empty url takes precedence over `url`.                                                                                         |
-| `overlay`       | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `true`; can be toggled later via `handle.setOverlayVisible`.                                                       |
+| Option          | Type      | Required | Description                                                                                                                                                                                               |
+|-----------------|-----------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `url`           | `string`  | no       | URL to stream the sensor updates from (includes a token for authentication). `http(s)://` is converted to `ws(s)://`. If omitted or empty, mocking stays disabled until a url is applied via the overlay. |
+| `urlStorageKey` | `string`  | no       | localStorage key. If set, a url applied via the overlay is saved under this key, and on startup a saved non-empty url takes precedence over `url`.                                                        |
+| `overlay`       | `boolean` | no       | Show a small bottom-left overlay with connection status, current coordinates, and an enable/disable toggle. Defaults to `true`; can be toggled later via `handle.setOverlayVisible`.                      |
 
 All options are optional, so `enableSensorMock()` can be called without arguments.
 
